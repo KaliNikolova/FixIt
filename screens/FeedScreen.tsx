@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/apiService';
 import { RepairDocument, RepairCategory } from '../types';
 import RepairCard from '../components/RepairCard';
+import { colors } from '../theme';
 
 const FeedScreen: React.FC = () => {
   const [repairs, setRepairs] = useState<RepairDocument[]>([]);
@@ -25,7 +26,7 @@ const FeedScreen: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
       <div className="space-y-4">
-        <h2 className="text-2xl font-black text-slate-900">Community Repairs</h2>
+        <h2 className="text-2xl font-black" style={{ color: colors.secondary.steelBlue }}>Community Repairs</h2>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -34,7 +35,9 @@ const FeedScreen: React.FC = () => {
               placeholder="Search repairs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-100 border-none rounded-2xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full bg-slate-100 border-none rounded-2xl pl-10 pr-4 py-3 text-sm outline-none transition-all"
+              onFocus={(e) => e.currentTarget.style.boxShadow = `0 0 0 3px ${colors.background.orangeLight15}`}  
+              onBlur={(e) => e.currentTarget.style.boxShadow = 'none'}
             />
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -46,8 +49,9 @@ const FeedScreen: React.FC = () => {
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
-                className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${filter === cat ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${filter === cat ? 'text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
+                style={{ backgroundColor: filter === cat ? colors.primary.orange : undefined }}
               >
                 {cat}
               </button>

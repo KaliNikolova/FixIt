@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RepairDocument } from '../types';
 import { apiService } from '../services/apiService';
+import { colors } from '../theme';
 
 const StepScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -96,7 +97,7 @@ const StepScreen: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 flex flex-col min-h-full space-y-6">
-      <div className="flex items-center justify-between text-[10px] font-black text-slate-400 px-1 uppercase tracking-[0.2em]">
+      <div className="flex items-center justify-between text-[10px] font-black px-1 uppercase tracking-[0.2em]" style={{ color: colors.primary.orange }}>
         <span>Step {currentStepIdx + 1} / {steps.length}</span>
         <div className="flex gap-1.5">
           {steps.map((_, idx) => (

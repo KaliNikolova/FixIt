@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RepairDocument } from '../types';
+import { colors } from '../theme';
 
 /**
  * Component to display the repair setup phase, including safety warnings
@@ -30,8 +31,8 @@ const SetupScreen: React.FC = () => {
   return (
     <div className="max-w-md mx-auto p-6 space-y-6 animate-in slide-in-from-bottom duration-500">
       <div className="space-y-1">
-        <span className="text-xs font-bold uppercase tracking-widest text-blue-600">{data.category}</span>
-        <h2 className="text-2xl font-black text-slate-900 leading-tight">{data.objectName}</h2>
+        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.primary.orange }}>{data.category}</span>
+        <h2 className="text-2xl font-black leading-tight" style={{ color: colors.secondary.steelBlue }}>{data.objectName}</h2>
         <p className="text-slate-500 font-medium">Issue: {data.issueType}</p>
       </div>
 
@@ -74,7 +75,7 @@ const SetupScreen: React.FC = () => {
           )}
         </div>
         
-        <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50">
+        <div className="p-5 rounded-2xl border" style={{ backgroundColor: colors.background.orangeLight8, borderColor: colors.background.orangeLight20 }}>
           <p className="text-slate-700 text-sm italic leading-relaxed font-medium">
             "{data.idealViewInstruction}"
           </p>
@@ -108,7 +109,10 @@ const SetupScreen: React.FC = () => {
 
         <button 
           onClick={() => navigate('/steps')}
-          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+          className="w-full text-white py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all"
+          style={{ backgroundColor: colors.primary.orange }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary.orangeHover}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary.orange}
         >
           Start Repair Guide
         </button>

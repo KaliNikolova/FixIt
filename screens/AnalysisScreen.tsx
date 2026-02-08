@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { RepairDocument } from '../types';
+import { colors } from '../theme';
 
 const AnalysisScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -95,10 +96,10 @@ const AnalysisScreen: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] p-8 text-center space-y-10 max-w-md mx-auto">
       <div className="relative">
-        <div className="w-32 h-32 border-[6px] border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-32 h-32 border-[6px] border-slate-100 rounded-full animate-spin" style={{ borderTopColor: colors.primary.orange }}></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.background.orangeLight15 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary.orange }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
           </div>
@@ -106,15 +107,15 @@ const AnalysisScreen: React.FC = () => {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-2xl font-black text-slate-800 tracking-tight transition-all">{loadingStep}</h3>
+        <h3 className="text-2xl font-black tracking-tight transition-all" style={{ color: colors.secondary.steelBlue }}>{loadingStep}</h3>
         <p className="text-slate-500 font-medium px-4">Creating your customized repair blueprint...</p>
       </div>
 
       <div className="w-full space-y-2">
         <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner">
           <div
-            className="h-full bg-blue-600 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
-            style={{ width: `${progress}%` }}
+            className="h-full transition-all duration-700 ease-out"
+            style={{ width: `${progress}%`, backgroundColor: colors.primary.orange, boxShadow: `0 0 10px ${colors.background.orangeLight20}` }}
           ></div>
         </div>
         <div className="flex justify-between text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">
