@@ -1,5 +1,5 @@
 {
-  "name": "Visual Repair Companion",
+  "name": "FixIt",
   "description": "An AI-powered diagnostic and repair assistant that identifies defects, provides safety warnings, scrapes official manuals, and generates step-by-step visual guides for any broken object.",
   "requestFramePermissions": [
     "camera"

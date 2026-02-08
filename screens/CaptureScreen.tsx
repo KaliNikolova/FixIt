@@ -62,9 +62,16 @@ const CaptureScreen: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="text-center space-y-2 pt-4">
-        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Repair it.</h2>
-        <p className="text-slate-500 font-medium">Snap a photo of the problem for an AI-generated fix.</p>
+      <div className="text-center space-y-0 pt-0">
+        <img 
+          src="/logo.png" 
+          alt="Fixit" 
+          className="h-32 mx-auto object-contain"
+        />
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-slate-900">Broken? Fixed.</h2>
+          <p className="text-slate-500 font-medium">Snap a photo, get AI-powered repair guides instantly.</p>
+        </div>
       </div>
 
       {!isCapturing ? (
