@@ -145,7 +145,10 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
         if response.candidates:
             for part in response.candidates[0].content.parts:
                 if part.inline_data:
-                    return f"data:image/png;base64,{base64.b64encode(part.inline_data.data).decode()}"
+                    mime_type = part.inline_data.mime_type or "image/png"
+                    # The SDK already returns the data as a base64 string in bytes
+                    b64_data = part.inline_data.data.decode() if isinstance(part.inline_data.data, bytes) else part.inline_data.data
+                    return f"data:{mime_type};base64,{b64_data}"
         
         return None
         
