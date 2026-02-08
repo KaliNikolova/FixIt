@@ -1,9 +1,12 @@
 """Gemini AI service for repair analysis and image generation."""
 
+import base64
+import json
+import re
 from google import genai
 from google.genai import types
 from config import get_settings
-from schemas import RepairAnalysis, ModerationResponse
+from schemas import ModerationResponse
 
 settings = get_settings()
 
@@ -28,7 +31,7 @@ def get_image_client() -> genai.Client:
     return _image_client
 
 
-async def analyze_image(photo_base64: str, user_text: str = "") -> RepairAnalysis:
+async def analyze_image(photo_base64: str, user_text: str = "") -> dict:
     """Analyze image and generate repair blueprint."""
     client = get_text_client()
     
@@ -52,18 +55,14 @@ async def analyze_image(photo_base64: str, user_text: str = "") -> RepairAnalysi
     - If toolsNeeded=false: Step 1 = immediate action
     Limit steps to 3-5. Be specific."""
 
+    # Decode base64 image
+    image_data = base64.b64decode(photo_base64)
+    
     response = client.models.generate_content(
-        model="gemini-2.5-flash-preview-04-17",
+        model="gemini-3-flash-preview",
         contents=[
-            types.Content(
-                parts=[
-                    types.Part.from_bytes(
-                        data=bytes.fromhex(photo_base64) if all(c in '0123456789abcdefABCDEF' for c in photo_base64[:10]) else __import__('base64').b64decode(photo_base64),
-                        mime_type="image/jpeg"
-                    ),
-                    types.Part.from_text(prompt)
-                ]
-            )
+            types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
+            prompt
         ],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -93,7 +92,6 @@ async def analyze_image(photo_base64: str, user_text: str = "") -> RepairAnalysi
         )
     )
     
-    import json
     return json.loads(response.text)
 
 
@@ -103,7 +101,7 @@ async def find_manual(object_name: str) -> str | None:
         client = get_text_client()
         
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-04-17",
+            model="gemini-3-flash-preview",
             contents=f"Find the official support page or PDF repair manual for: {object_name}. Return the primary URL.",
             config=types.GenerateContentConfig(
                 tools=[types.Tool(google_search=types.GoogleSearch())]
@@ -119,7 +117,6 @@ async def find_manual(object_name: str) -> str | None:
                         return chunk.web.uri
         
         # Fallback: extract URL from text
-        import re
         text = response.text or ""
         url_match = re.search(r'https?://[^\s]+', text)
         return url_match.group(0) if url_match else None
@@ -137,7 +134,7 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
         prompt = f"Professional technical repair manual photograph. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. High-quality studio lighting, sharp focus on repair area, neutral background, no text overlays, realistic photographic style."
         
         response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-flash-image",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_modalities=["image", "text"]
@@ -148,7 +145,6 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
         if response.candidates:
             for part in response.candidates[0].content.parts:
                 if part.inline_data:
-                    import base64
                     return f"data:image/png;base64,{base64.b64encode(part.inline_data.data).decode()}"
         
         return None
@@ -165,18 +161,13 @@ async def troubleshoot(photo_base64: str, object_name: str, step_index: int, cur
         
         prompt = f'The user is repairing a {object_name} and is currently at Step {step_index + 1}: "{current_step_text}". They have provided a photo of their current state because they are "stuck". Analyze the photo, identify common pitfalls at this stage, and provide encouraging, expert troubleshooting advice. Keep it under 100 words.'
         
+        image_data = base64.b64decode(photo_base64)
+        
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-04-17",
+            model="gemini-3-flash-preview",
             contents=[
-                types.Content(
-                    parts=[
-                        types.Part.from_bytes(
-                            data=__import__('base64').b64decode(photo_base64),
-                            mime_type="image/jpeg"
-                        ),
-                        types.Part.from_text(prompt)
-                    ]
-                )
+                types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
+                prompt
             ]
         )
         
@@ -194,18 +185,13 @@ async def moderate_image(photo_base64: str) -> ModerationResponse:
         
         prompt = 'Analyze this image for safety. REJECT if: nudity, violence, gore, hate symbols. Return JSON: { "safe": boolean, "reason": string | null }'
         
+        image_data = base64.b64decode(photo_base64)
+        
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-04-17",
+            model="gemini-3-flash-preview",
             contents=[
-                types.Content(
-                    parts=[
-                        types.Part.from_bytes(
-                            data=__import__('base64').b64decode(photo_base64),
-                            mime_type="image/jpeg"
-                        ),
-                        types.Part.from_text(prompt)
-                    ]
-                )
+                types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
+                prompt
             ],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -219,7 +205,6 @@ async def moderate_image(photo_base64: str) -> ModerationResponse:
             )
         )
         
-        import json
         result = json.loads(response.text or '{"safe": true, "reason": null}')
         return ModerationResponse(**result)
         

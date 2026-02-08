@@ -33,27 +33,47 @@ def repair_to_response(repair: Repair) -> dict:
 
 
 @router.post("/", response_model=RepairResponse)
-def create_repair(repair: RepairCreate, db: Session = Depends(get_db)):
-    """Create a new repair document."""
-    db_repair = Repair(
-        repair_id=repair.repairId,
-        timestamp=repair.timestamp,
-        is_public=repair.isPublic,
-        is_successful=repair.isSuccessful,
-        status=repair.status,
-        object_name=repair.objectName,
-        category=repair.category,
-        issue_type=repair.issueType,
-        safety_warning=repair.safetyWarning,
-        tools_needed=repair.toolsNeeded,
-        ideal_view_instruction=repair.idealViewInstruction,
-        user_photo_url=repair.userPhotoUrl,
-        ideal_view_image_url=repair.idealViewImageUrl,
-        manual_url=repair.manualUrl,
-        steps=[step.model_dump() for step in repair.steps]
-    )
+def save_repair(repair: RepairCreate, db: Session = Depends(get_db)):
+    """Create or update a repair document (upsert)."""
+    db_repair = db.query(Repair).filter(Repair.repair_id == repair.repairId).first()
     
-    db.add(db_repair)
+    if db_repair:
+        # Update existing
+        db_repair.timestamp = repair.timestamp
+        db_repair.is_public = repair.isPublic
+        db_repair.is_successful = repair.isSuccessful
+        db_repair.status = repair.status
+        db_repair.object_name = repair.objectName
+        db_repair.category = repair.category
+        db_repair.issue_type = repair.issueType
+        db_repair.safety_warning = repair.safetyWarning
+        db_repair.tools_needed = repair.toolsNeeded
+        db_repair.ideal_view_instruction = repair.idealViewInstruction
+        db_repair.user_photo_url = repair.userPhotoUrl
+        db_repair.ideal_view_image_url = repair.idealViewImageUrl
+        db_repair.manual_url = repair.manualUrl
+        db_repair.steps = [step.model_dump() for step in repair.steps]
+    else:
+        # Create new
+        db_repair = Repair(
+            repair_id=repair.repairId,
+            timestamp=repair.timestamp,
+            is_public=repair.isPublic,
+            is_successful=repair.isSuccessful,
+            status=repair.status,
+            object_name=repair.objectName,
+            category=repair.category,
+            issue_type=repair.issueType,
+            safety_warning=repair.safetyWarning,
+            tools_needed=repair.toolsNeeded,
+            ideal_view_instruction=repair.idealViewInstruction,
+            user_photo_url=repair.userPhotoUrl,
+            ideal_view_image_url=repair.idealViewImageUrl,
+            manual_url=repair.manualUrl,
+            steps=[step.model_dump() for step in repair.steps]
+        )
+        db.add(db_repair)
+    
     db.commit()
     db.refresh(db_repair)
     

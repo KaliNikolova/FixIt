@@ -81,7 +81,12 @@ const AnalysisScreen: React.FC = () => {
         };
 
         setProgress(100);
-        sessionStorage.setItem('current_repair_data', JSON.stringify(finalData));
+
+        await apiService.saveRepair(finalData);
+
+        sessionStorage.setItem('current_repair_id', finalData.repairId);
+        sessionStorage.removeItem('current_repair_photo'); // Clear the large photo
+
         setTimeout(() => navigate('/setup'), 500);
       } catch (err) {
         console.error("Fatal analysis error:", err);

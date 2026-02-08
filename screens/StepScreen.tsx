@@ -17,12 +17,22 @@ const StepScreen: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('current_repair_data');
-    if (stored) {
-      setData(JSON.parse(stored));
-    } else {
-      navigate('/');
-    }
+    const fetchRepair = async () => {
+      const repairId = sessionStorage.getItem('current_repair_id');
+      if (!repairId) {
+        navigate('/');
+        return;
+      }
+
+      const repair = await apiService.getRepair(repairId);
+      if (repair) {
+        setData(repair);
+      } else {
+        navigate('/');
+      }
+    };
+
+    fetchRepair();
   }, [navigate]);
 
   if (!data) return null;

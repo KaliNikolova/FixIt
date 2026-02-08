@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RepairDocument } from '../types';
 import { colors } from '../theme';
+import { apiService } from '../services/apiService';
 
 /**
  * Component to display the repair setup phase, including safety warnings
@@ -13,17 +14,22 @@ const SetupScreen: React.FC = () => {
   const [data, setData] = useState<RepairDocument | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('current_repair_data');
-    if (stored) {
-      try {
-        setData(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse stored repair data", e);
+    const fetchRepair = async () => {
+      const repairId = sessionStorage.getItem('current_repair_id');
+      if (!repairId) {
+        navigate('/');
+        return;
+      }
+
+      const repair = await apiService.getRepair(repairId);
+      if (repair) {
+        setData(repair);
+      } else {
         navigate('/');
       }
-    } else {
-      navigate('/');
-    }
+    };
+
+    fetchRepair();
   }, [navigate]);
 
   if (!data) return null;
@@ -53,28 +59,28 @@ const SetupScreen: React.FC = () => {
           <h3 className="text-lg font-bold text-slate-800">Ideal Setup</h3>
           <span className="text-xs bg-slate-100 px-2 py-1 rounded-md text-slate-500">Preparation</span>
         </div>
-        
+
         <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100 min-h-[200px] flex items-center justify-center">
           {data.idealViewImageUrl ? (
-            <img 
-              src={data.idealViewImageUrl} 
-              alt="Ideal View" 
+            <img
+              src={data.idealViewImageUrl}
+              alt="Ideal View"
               className="w-full aspect-square object-cover"
             />
           ) : (
             <div className="p-8 text-center space-y-4">
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-relaxed">
-                Step Visual Unavailable<br/><span className="font-normal normal-case opacity-60">(Review text instruction below)</span>
+                Step Visual Unavailable<br /><span className="font-normal normal-case opacity-60">(Review text instruction below)</span>
               </p>
             </div>
           )}
         </div>
-        
+
         <div className="p-5 rounded-2xl border" style={{ backgroundColor: colors.background.orangeLight8, borderColor: colors.background.orangeLight20 }}>
           <p className="text-slate-700 text-sm italic leading-relaxed font-medium">
             "{data.idealViewInstruction}"
@@ -84,9 +90,9 @@ const SetupScreen: React.FC = () => {
 
       <div className="flex flex-col gap-3">
         {data.manualUrl && (
-          <a 
-            href={data.manualUrl} 
-            target="_blank" 
+          <a
+            href={data.manualUrl}
+            target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
           >
@@ -107,7 +113,7 @@ const SetupScreen: React.FC = () => {
           </a>
         )}
 
-        <button 
+        <button
           onClick={() => navigate('/steps')}
           className="w-full text-white py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all"
           style={{ backgroundColor: colors.primary.orange }}
@@ -117,7 +123,7 @@ const SetupScreen: React.FC = () => {
           Start Repair Guide
         </button>
       </div>
-    </div>
+    </div >
   );
 };
 

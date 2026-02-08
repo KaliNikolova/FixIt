@@ -13,12 +13,22 @@ const CompletionScreen: React.FC = () => {
   const [moderationError, setModerationError] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('current_repair_data');
-    if (stored) {
-      setData(JSON.parse(stored));
-    } else {
-      navigate('/');
-    }
+    const fetchRepair = async () => {
+      const repairId = sessionStorage.getItem('current_repair_id');
+      if (!repairId) {
+        navigate('/');
+        return;
+      }
+
+      const repair = await apiService.getRepair(repairId);
+      if (repair) {
+        setData(repair);
+      } else {
+        navigate('/');
+      }
+    };
+
+    fetchRepair();
   }, [navigate]);
 
   if (!data) return null;
@@ -36,9 +46,11 @@ const CompletionScreen: React.FC = () => {
       }
     }
 
+    // Update the existing repair in database
     await apiService.saveRepair(updatedData);
-    sessionStorage.removeItem('current_repair_data');
-    sessionStorage.removeItem('current_repair_photo');
+
+    // Clear session data
+    sessionStorage.removeItem('current_repair_id');
     sessionStorage.removeItem('current_repair_text');
 
     if (isPublic) {
