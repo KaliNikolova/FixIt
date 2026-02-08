@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { RepairDocument } from '../types';
+import { colors } from '../theme';
 
 interface Props {
   repair: RepairDocument;
@@ -43,7 +44,7 @@ const RepairCard: React.FC<Props> = ({ repair }) => {
               {repair.steps.map((step, idx) => (
                 <div key={idx} className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <span className="w-6 h-6 text-white rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: colors.primary.orange }}>
                       {idx + 1}
                     </span>
                     <p className="font-bold text-slate-700 leading-tight">{step.instruction}</p>

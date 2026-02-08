@@ -87,7 +87,7 @@ const CaptureScreen: React.FC = () => {
               alt="Captured" 
               className="w-full h-full object-cover"
             />
-            <button 
+            <button
               onClick={() => setCapturedImage(null)}
               className="absolute top-6 right-6 bg-black/40 backdrop-blur-md p-3 rounded-full hover:bg-black/60 transition-colors"
             >
@@ -109,7 +109,7 @@ const CaptureScreen: React.FC = () => {
                 e.target.style.boxShadow = `0 0 0 4px ${colors.background.orangeLight15}`;
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#E2E8F0';
+                e.target.style.borderColor = colors.neutral.slate200;
                 e.target.style.boxShadow = '0 1px 2px 0 rgb(0 0 0 / 0.05)';
               }}
             />
@@ -183,7 +183,7 @@ const CaptureScreen: React.FC = () => {
               onClick={() => setIsCapturing(false)}
               className="absolute top-6 right-6 bg-black/40 backdrop-blur-md p-3 rounded-full hover:bg-black/60 transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="#FF9450">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill={colors.primary.orange}>
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>

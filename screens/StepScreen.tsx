@@ -113,7 +113,8 @@ const StepScreen: React.FC = () => {
           {steps.map((_, idx) => (
             <div
               key={idx}
-              className={`h-1 rounded-full transition-all duration-300 ${idx === currentStepIdx ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-200'}`}
+              className={`h-1 rounded-full transition-all duration-300 ${idx === currentStepIdx ? 'w-6' : 'w-1.5 bg-slate-200'}`}
+              style={{ backgroundColor: idx === currentStepIdx ? colors.primary.orange : undefined }}
             />
           ))}
         </div>
@@ -148,7 +149,8 @@ const StepScreen: React.FC = () => {
                   <button
                     onClick={analyzeStuck}
                     disabled={isAnalyzingStuck}
-                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
+                    className="w-full text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
+                    style={{ backgroundColor: colors.primary.orange }}
                   >
                     {isAnalyzingStuck ? (
                       <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -164,8 +166,8 @@ const StepScreen: React.FC = () => {
             ) : (
               <div className="p-8 h-full flex flex-col justify-center text-white bg-slate-900 overflow-auto animate-in fade-in duration-300">
                 <div className="space-y-6">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: colors.primary.orange, boxShadow: `0 0 20px ${colors.primary.orange}40` }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h4z" />
                     </svg>
                   </div>
@@ -196,7 +198,16 @@ const StepScreen: React.FC = () => {
         {!isStuck && (
           <button
             onClick={startStuckFlow}
-            className="flex items-center gap-3 text-slate-400 hover:text-blue-600 transition-all font-black text-[10px] uppercase tracking-widest py-2 px-4 rounded-full hover:bg-blue-50"
+            className="flex items-center gap-3 transition-all font-black text-[10px] uppercase tracking-widest py-2 px-4 rounded-full hover:bg-white"
+            style={{ color: colors.neutral.slate400 }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = colors.primary.orange;
+              e.currentTarget.style.backgroundColor = colors.background.orangeLight8;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = colors.neutral.slate400;
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <div className="w-6 h-6 rounded-full border border-slate-200 flex items-center justify-center">?</div>
             I need troubleshooting help
@@ -213,7 +224,10 @@ const StepScreen: React.FC = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-blue-700 active:scale-95 transition-all"
+          className="text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all"
+          style={{ backgroundColor: colors.primary.orange }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary.orangeHover}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary.orange}
         >
           {isLastStep ? 'Finish' : 'Got It'}
         </button>
