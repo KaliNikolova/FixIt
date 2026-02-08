@@ -2,8 +2,12 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { RepairAnalysis, RepairStatus, RepairCategory } from "../types";
 
-// Helper to initialize GoogleGenAI with appropriate configuration. Always use named parameter.
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to initialize GoogleGenAI for text operations (free tier).
+const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// Helper to initialize GoogleGenAI for image generation (billed key).
+// Uses GEMINI_IMAGE_API_KEY for paid image generation to avoid free tier quota limits.
+const getImageAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_IMAGE_API_KEY });
 
 export const geminiService = {
   // Analyzes image and user description to generate a structured repair blueprint.
@@ -81,7 +85,7 @@ export const geminiService = {
     try {
       const ai = getAI();
       const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: `Find the official support page or PDF repair manual for: ${objectName}. Return the primary URL.`,
         config: {
           tools: [{ googleSearch: {} }]
@@ -106,7 +110,7 @@ export const geminiService = {
   // Generates a technical illustration for a specific repair step.
   async generateStepImage(objectName: string, stepDescription: string, idealView: string): Promise<string | null> {
     try {
-      const ai = getAI();
+      const ai = getImageAI(); // Use billed key for image generation
       const prompt = `Professional technical repair manual photograph. Object: ${objectName}. Scene: ${idealView}. Action: ${stepDescription}. High-quality studio lighting, sharp focus on repair area, neutral background, no text overlays, realistic photographic style.`;
 
       const response = await ai.models.generateContent({
@@ -166,7 +170,7 @@ export const geminiService = {
             { text: prompt }
           ]
         },
-        config: { 
+        config: {
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
