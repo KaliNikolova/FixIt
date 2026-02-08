@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { geminiService } from '../services/geminiService';
+import { apiService } from '../services/apiService';
 import { RepairDocument } from '../types';
 
 const AnalysisScreen: React.FC = () => {
@@ -27,34 +27,34 @@ const AnalysisScreen: React.FC = () => {
         setLoadingStep('Analyzing Object & Issue...');
         setProgress(15);
         // This is the only "Hard Requirement" call
-        const analysis = await geminiService.analyzeImage(photo, text);
-        
+        const analysis = await apiService.analyzeImage(photo, text);
+
         setLoadingStep('Searching Grounded Support Data...');
         setProgress(35);
         let manualUrl = null;
         try {
-          manualUrl = await geminiService.findManual(analysis.objectName);
+          manualUrl = await apiService.findManual(analysis.objectName);
         } catch (e) { console.warn("Manual search failed non-fatally", e); }
 
         setLoadingStep('Visualizing Your Setup...');
         setProgress(55);
         let idealViewUrl = null;
         try {
-          idealViewUrl = await geminiService.generateStepImage(
-            analysis.objectName, 
-            "Overview for setup", 
+          idealViewUrl = await apiService.generateStepImage(
+            analysis.objectName,
+            "Overview for setup",
             analysis.idealViewInstruction
           );
         } catch (e) { console.warn("Ideal view generation failed non-fatally", e); }
 
         setLoadingStep('Generating Step-by-Step Visuals...');
         setProgress(75);
-        
+
         // Generate images one by one or in parallel but catch individual failures
         const stepImages = await Promise.all(
           analysis.steps.map(async (s) => {
             try {
-              return await geminiService.generateStepImage(analysis.objectName, s.instruction, analysis.idealViewInstruction);
+              return await apiService.generateStepImage(analysis.objectName, s.instruction, analysis.idealViewInstruction);
             } catch (e) {
               console.warn(`Step ${s.stepNumber} image generation failed`, e);
               return null;
@@ -98,13 +98,13 @@ const AnalysisScreen: React.FC = () => {
         <div className="w-32 h-32 border-[6px] border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-3">
         <h3 className="text-2xl font-black text-slate-800 tracking-tight transition-all">{loadingStep}</h3>
         <p className="text-slate-500 font-medium px-4">Creating your customized repair blueprint...</p>
@@ -112,7 +112,7 @@ const AnalysisScreen: React.FC = () => {
 
       <div className="w-full space-y-2">
         <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner">
-          <div 
+          <div
             className="h-full bg-blue-600 transition-all duration-700 ease-out shadow-[0_0_10px_rgba(37,99,235,0.4)]"
             style={{ width: `${progress}%` }}
           ></div>

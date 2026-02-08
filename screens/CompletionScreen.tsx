@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RepairDocument } from '../types';
-import { storageService } from '../services/storageService';
-import { geminiService } from '../services/geminiService';
+import { apiService } from '../services/apiService';
 
 const CompletionScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -25,10 +24,10 @@ const CompletionScreen: React.FC = () => {
 
   const handleSave = async (isPublic: boolean) => {
     const updatedData = { ...data, isSuccessful: feedback, isPublic };
-    
+
     if (isPublic) {
       setIsPosting(true);
-      const moderation = await geminiService.moderateImage(data.userPhotoUrl);
+      const moderation = await apiService.moderateImage(data.userPhotoUrl);
       if (!moderation.safe) {
         setModerationError(moderation.reason || "This image cannot be posted publicly.");
         setIsPosting(false);
@@ -36,11 +35,11 @@ const CompletionScreen: React.FC = () => {
       }
     }
 
-    storageService.saveRepair(updatedData);
+    await apiService.saveRepair(updatedData);
     sessionStorage.removeItem('current_repair_data');
     sessionStorage.removeItem('current_repair_photo');
     sessionStorage.removeItem('current_repair_text');
-    
+
     if (isPublic) {
       navigate('/feed');
     } else {
@@ -63,21 +62,21 @@ const CompletionScreen: React.FC = () => {
       <div className="bg-slate-50 p-6 rounded-3xl space-y-4 border border-slate-100">
         <h3 className="font-bold text-slate-800">Did the repair work?</h3>
         <div className="grid grid-cols-3 gap-3">
-          <button 
+          <button
             onClick={() => setFeedback(true)}
             className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${feedback === true ? 'bg-green-600 text-white shadow-lg' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
           >
             <span className="text-xl">✅</span>
             <span className="text-xs font-bold">Yes!</span>
           </button>
-          <button 
+          <button
             onClick={() => setFeedback(false)}
             className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${feedback === false ? 'bg-red-600 text-white shadow-lg' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
           >
             <span className="text-xl">❌</span>
             <span className="text-xs font-bold">No</span>
           </button>
-          <button 
+          <button
             onClick={() => setFeedback(null)}
             className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${feedback === null ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-500 hover:bg-slate-100'}`}
           >
@@ -95,14 +94,14 @@ const CompletionScreen: React.FC = () => {
 
       <div className="space-y-3 pt-4">
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Community Sharing</p>
-        <button 
+        <button
           onClick={() => handleSave(true)}
           disabled={isPosting}
           className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
         >
           {isPosting ? 'Moderating...' : 'Post Anonymously'}
         </button>
-        <button 
+        <button
           onClick={() => handleSave(false)}
           className="w-full bg-white border border-slate-200 py-3 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all"
         >

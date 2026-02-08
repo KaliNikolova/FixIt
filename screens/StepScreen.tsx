@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RepairDocument } from '../types';
-import { geminiService } from '../services/geminiService';
+import { apiService } from '../services/apiService';
 
 const StepScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -72,16 +72,16 @@ const StepScreen: React.FC = () => {
         canvasRef.current.height = videoRef.current.videoHeight;
         context.drawImage(videoRef.current, 0, 0);
         const base64 = canvasRef.current.toDataURL('image/jpeg', 0.8).split(',')[1];
-        
+
         try {
-          const advice = await geminiService.troubleshoot(
-            base64, 
-            data.objectName, 
-            currentStepIdx, 
+          const advice = await apiService.troubleshoot(
+            base64,
+            data.objectName,
+            currentStepIdx,
             currentStep.instruction
           );
           setStuckAdvice(advice);
-          
+
           const stream = videoRef.current.srcObject as MediaStream;
           stream?.getTracks().forEach(track => track.stop());
         } catch (err) {
@@ -100,8 +100,8 @@ const StepScreen: React.FC = () => {
         <span>Step {currentStepIdx + 1} / {steps.length}</span>
         <div className="flex gap-1.5">
           {steps.map((_, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`h-1 rounded-full transition-all duration-300 ${idx === currentStepIdx ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-200'}`}
             />
           ))}
@@ -111,20 +111,20 @@ const StepScreen: React.FC = () => {
       <div className="bg-white rounded-[32px] overflow-hidden shadow-2xl border border-slate-100 relative group min-h-[300px] flex items-center justify-center">
         {!isStuck ? (
           currentStep.generatedImageUrl ? (
-            <img 
-              src={currentStep.generatedImageUrl} 
-              alt={`Step ${currentStepIdx + 1}`} 
+            <img
+              src={currentStep.generatedImageUrl}
+              alt={`Step ${currentStepIdx + 1}`}
               className="w-full aspect-square object-cover"
             />
           ) : (
             <div className="p-10 text-center space-y-4">
-               <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto border border-slate-100">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto border border-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-relaxed">
-                Step Visualization Unavailable<br/><span className="font-normal normal-case opacity-60">Follow instructions below</span>
+                Step Visualization Unavailable<br /><span className="font-normal normal-case opacity-60">Follow instructions below</span>
               </p>
             </div>
           )
@@ -134,7 +134,7 @@ const StepScreen: React.FC = () => {
               <>
                 <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
                 <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
-                  <button 
+                  <button
                     onClick={analyzeStuck}
                     disabled={isAnalyzingStuck}
                     className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
@@ -162,7 +162,7 @@ const StepScreen: React.FC = () => {
                     <h4 className="font-black text-xl tracking-tight">Expert Advice</h4>
                     <p className="text-slate-400 text-sm leading-relaxed mt-2 font-medium">{stuckAdvice}</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => { setIsStuck(false); setStuckAdvice(null); }}
                     className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
                   >
@@ -183,7 +183,7 @@ const StepScreen: React.FC = () => {
         </div>
 
         {!isStuck && (
-          <button 
+          <button
             onClick={startStuckFlow}
             className="flex items-center gap-3 text-slate-400 hover:text-blue-600 transition-all font-black text-[10px] uppercase tracking-widest py-2 px-4 rounded-full hover:bg-blue-50"
           >
@@ -194,13 +194,13 @@ const StepScreen: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-4 pb-4">
-        <button 
+        <button
           onClick={handleBack}
           className="bg-white border border-slate-200 py-4 rounded-2xl font-bold text-slate-700 hover:bg-slate-50 transition-all"
         >
           Previous
         </button>
-        <button 
+        <button
           onClick={handleNext}
           className="bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-blue-700 active:scale-95 transition-all"
         >
