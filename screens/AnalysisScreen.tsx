@@ -44,7 +44,8 @@ const AnalysisScreen: React.FC = () => {
           idealViewUrl = await apiService.generateStepImage(
             analysis.objectName,
             "Overview for setup",
-            analysis.idealViewInstruction
+            analysis.idealViewInstruction,
+            photo
           );
         } catch (e) { console.warn("Ideal view generation failed non-fatally", e); }
 
@@ -55,7 +56,12 @@ const AnalysisScreen: React.FC = () => {
         const stepImages = await Promise.all(
           analysis.steps.map(async (s) => {
             try {
-              return await apiService.generateStepImage(analysis.objectName, s.instruction, analysis.idealViewInstruction);
+              return await apiService.generateStepImage(
+                analysis.objectName,
+                s.instruction,
+                analysis.idealViewInstruction,
+                photo
+              );
             } catch (e) {
               console.warn(`Step ${s.stepNumber} image generation failed`, e);
               return null;

@@ -37,7 +37,8 @@ async def generate_step_image(request: GenerateStepImageRequest):
     image_url = await gemini_service.generate_step_image(
         request.objectName,
         request.stepDescription,
-        request.idealView
+        request.idealView,
+        request.referenceImageBase64
     )
     return {"imageUrl": image_url}
 

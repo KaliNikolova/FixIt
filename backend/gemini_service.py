@@ -50,20 +50,27 @@ async def analyze_image(photo_base64: str, user_text: str = "") -> dict:
     """Analyze image and generate repair blueprint."""
     client = get_text_client()
     
-    prompt = f"""You are a repair diagnostic AI. Analyze this image and return valid JSON following the provided schema.
+    prompt = f"""You are a Master Repair Technician and Diagnostic Specialist. 
+    Analyze this image and return valid JSON following the provided schema.
     {f'User context: "{user_text}"' if user_text else ""}
 
     TASKS:
     1. Identify the object (brand/model if visible)
-    2. Identify the defect or issue
+    2. Identify the specific defect or issue
     3. Check if repair is safe for non-experts
     4. Determine if external tools are required
     5. Plan 3-5 repair steps
 
+    CONSTRAINTS & RULES:
+    - TOOL NAMING: Use generic, standard tool names (e.g., "Phillips Screwdriver", "Wrench", "Pliers"). 
+    - NEVER guess specific sizes (e.g., "15mm") unless the marking is explicitly clear and legible in the photo. 
+    - If you are unsure of the size, just say "Appropriate sized [tool]".
+    - Be authoritative but safety-first.
+
     SAFETY RULES:
     - If electrical with exposed wiring -> status: "unsafe"
     - If gas appliance -> status: "unsafe"
-    - If spring-loaded/high tension -> add warning
+    - If spring-loaded/high tension -> add specific warning
 
     STEP 1 RULES:
     - If toolsNeeded=true: Step 1 = "Gather tools: [list]"
@@ -192,16 +199,24 @@ async def find_manual(object_name: str) -> str | None:
         return None
 
 
-async def generate_step_image(object_name: str, step_description: str, ideal_view: str) -> str | None:
-    """Generate technical illustration for a repair step using billed key."""
+async def generate_step_image(object_name: str, step_description: str, ideal_view: str, reference_image_base64: str = None) -> str | None:
+    """Generate technical illustration for a repair step using billed key and optional reference image."""
     try:
         client = get_image_client()
         
-        prompt = f"Professional technical repair manual photograph. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. High-quality studio lighting, sharp focus on repair area, neutral background, no text overlays, realistic photographic style."
+        prompt = f"Professional technical repair manual illustration. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. Style: Sharp photographic realism, high-quality studio lighting, neutral background, no text overlays."
+        
+        contents = []
+        if reference_image_base64:
+            prompt = f"REFERENCE IMAGE PROVIDED. Use the object geometry and environment from the reference image. Modify the scene to show this action: {step_description}. Keep the {object_name} consistent with the reference photo. {prompt}"
+            image_data = base64.b64decode(reference_image_base64)
+            contents.append(types.Part.from_bytes(data=image_data, mime_type="image/jpeg"))
+        
+        contents.append(prompt)
         
         response = client.models.generate_content(
             model=MODEL_IMAGE,
-            contents=prompt,
+            contents=contents,
             config=types.GenerateContentConfig(
                 response_modalities=["image", "text"],
                 image_generation_config=types.ImageGenerationConfig(

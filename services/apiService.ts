@@ -32,12 +32,13 @@ export const apiService = {
     async generateStepImage(
         objectName: string,
         stepDescription: string,
-        idealView: string
+        idealView: string,
+        referenceImageBase64?: string
     ): Promise<string | null> {
         const response = await fetch(`${API_BASE_URL}/gemini/generate-step-image`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ objectName, stepDescription, idealView })
+            body: JSON.stringify({ objectName, stepDescription, idealView, referenceImageBase64 })
         });
         if (!response.ok) return null;
         const data = await response.json();

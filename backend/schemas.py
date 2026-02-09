@@ -78,6 +78,7 @@ class GenerateStepImageRequest(BaseModel):
     objectName: str
     stepDescription: str
     idealView: str
+    referenceImageBase64: Optional[str] = None
 
 
 class TroubleshootRequest(BaseModel):
