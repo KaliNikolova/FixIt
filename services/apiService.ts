@@ -1,9 +1,10 @@
 /**
  * API service for communicating with the FastAPI backend.
  * Replaces direct Gemini calls and localStorage with server-side operations.
+ * Uses environment variable VITE_API_BASE_URL (defaults to localhost:8000 for local dev).
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const apiService = {
     // ============ Gemini AI Endpoints ============

@@ -12,6 +12,23 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (never commit actual keys)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+backend/venv/
+backend/*.egg-info/
+backend/.pytest_cache/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
