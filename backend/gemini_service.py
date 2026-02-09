@@ -3,8 +3,6 @@
 import base64
 import json
 import re
-import urllib.request
-import urllib.error
 from google import genai
 from google.genai import types
 from config import get_settings
@@ -146,24 +144,6 @@ def _pick_preferred_url(urls: list[str], prefer_pdf: bool) -> str | None:
     return urls[0]
 
 
-def _is_url_reachable(url: str, timeout_seconds: float = 3.0) -> bool:
-    try:
-        request = urllib.request.Request(url, method="HEAD")
-        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            return 200 <= response.status < 400
-    except urllib.error.HTTPError as exc:
-        if exc.code == 405:
-            try:
-                request = urllib.request.Request(url, method="GET")
-                with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-                    return 200 <= response.status < 400
-            except Exception:
-                return False
-        return False
-    except Exception:
-        return False
-
-
 async def find_manual(object_name: str) -> str | None:
     """Find a single best resource link with PDF priority, then broader sources."""
     try:
@@ -202,8 +182,7 @@ async def find_manual(object_name: str) -> str | None:
             )
 
             urls = _extract_urls_from_response(response)
-            reachable_urls = [url for url in urls if _is_url_reachable(url)]
-            preferred = _pick_preferred_url(reachable_urls, prefer_pdf)
+            preferred = _pick_preferred_url(urls, prefer_pdf)
             if preferred:
                 return preferred
 
@@ -224,7 +203,10 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
             model=MODEL_IMAGE,
             contents=prompt,
             config=types.GenerateContentConfig(
-                response_modalities=["image", "text"]
+                response_modalities=["image", "text"],
+                image_generation_config=types.ImageGenerationConfig(
+                    aspect_ratio="1:1"
+                )
             )
         )
         
