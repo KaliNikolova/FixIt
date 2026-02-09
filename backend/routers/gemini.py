@@ -38,7 +38,8 @@ async def generate_step_image(request: GenerateStepImageRequest):
         request.objectName,
         request.stepDescription,
         request.idealView,
-        request.referenceImageBase64
+        request.referenceImageBase64,
+        request.shouldHighlight
     )
     return {"imageUrl": image_url}
 

@@ -199,18 +199,32 @@ async def find_manual(object_name: str) -> str | None:
         return None
 
 
-async def generate_step_image(object_name: str, step_description: str, ideal_view: str, reference_image_base64: str = None) -> str | None:
-    """Generate technical illustration for a repair step using billed key and optional reference image."""
+async def generate_step_image(object_name: str, step_description: str, ideal_view: str, reference_image_base64: str = None, should_highlight: bool = False) -> str | None:
+    """Generate technical illustration or highlight defects on original photo."""
     try:
         client = get_image_client()
         
-        prompt = f"Professional technical repair manual illustration. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. Style: Sharp photographic realism, high-quality studio lighting, neutral background, no text overlays."
-        
         contents = []
-        if reference_image_base64:
-            prompt = f"REFERENCE IMAGE PROVIDED. Use the object geometry and environment from the reference image. Modify the scene to show this action: {step_description}. Keep the {object_name} consistent with the reference photo. {prompt}"
+        if should_highlight and reference_image_base64:
+            # Setup phase: Draw on the original photo
+            prompt = (
+                f"TECHNICAL ANNOTATION TASK. You are provided with a reference photo of a {object_name}. "
+                f"Your task is to draw a BOLD, CLEAR RED CIRCLE or ARROW on top of this photo to specifically point out the problem: {step_description}. "
+                "DO NOT change the lighting, geometry, or background of the original photo. "
+                "ONLY add the red marker. The final image must look like the original photo but with a professional technical markup added."
+            )
             image_data = base64.b64decode(reference_image_base64)
             contents.append(types.Part.from_bytes(data=image_data, mime_type="image/jpeg"))
+        else:
+            # Repair steps: Generate descriptive illustrations
+            base_prompt = f"Professional technical repair manual illustration. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. Style: Sharp photographic realism, high-quality studio lighting, neutral background, no text overlays."
+            
+            if reference_image_base64:
+                prompt = f"REFERENCE IMAGE PROVIDED. Use the object geometry and environment from the reference image. Modify the scene to show this action: {step_description}. Keep the {object_name} consistent with the reference photo. {base_prompt}"
+                image_data = base64.b64decode(reference_image_base64)
+                contents.append(types.Part.from_bytes(data=image_data, mime_type="image/jpeg"))
+            else:
+                prompt = base_prompt
         
         contents.append(prompt)
         
@@ -219,7 +233,7 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
             contents=contents,
             config=types.GenerateContentConfig(
                 response_modalities=["image", "text"],
-                image_generation_config=types.ImageGenerationConfig(
+                image_config=types.ImageConfig(
                     aspect_ratio="1:1"
                 )
             )
@@ -230,8 +244,21 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
             for part in response.candidates[0].content.parts:
                 if part.inline_data:
                     mime_type = part.inline_data.mime_type or "image/png"
-                    # The SDK already returns the data as a base64 string in bytes
-                    b64_data = part.inline_data.data.decode() if isinstance(part.inline_data.data, bytes) else part.inline_data.data
+                    data = part.inline_data.data
+                    if isinstance(data, bytes):
+                        # If it starts with non-ASCII or common image magic bytes, it's raw binary
+                        # Base64 only uses 0-127 (A-Z, a-z, 0-9, +, /)
+                        if any(b > 127 for b in data[:10]):
+                            b64_data = base64.b64encode(data).decode()
+                        else:
+                            # Likely already base64-encoded bytes
+                            try:
+                                b64_data = data.decode()
+                            except UnicodeDecodeError:
+                                b64_data = base64.b64encode(data).decode()
+                    else:
+                        b64_data = data
+                    
                     return f"data:{mime_type};base64,{b64_data}"
         
         return None

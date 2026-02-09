@@ -43,9 +43,10 @@ const AnalysisScreen: React.FC = () => {
         try {
           idealViewUrl = await apiService.generateStepImage(
             analysis.objectName,
-            "Overview for setup",
+            `Highlight the defect: ${analysis.issueType}`,
             analysis.idealViewInstruction,
-            photo
+            photo,
+            true // shouldHighlight
           );
         } catch (e) { console.warn("Ideal view generation failed non-fatally", e); }
 

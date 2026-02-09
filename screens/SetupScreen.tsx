@@ -44,29 +44,16 @@ const SetupScreen: React.FC = () => {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-800">Ideal Setup</h3>
+          <h3 className="text-lg font-bold text-slate-800">Defect Analysis</h3>
           <span className="text-xs bg-slate-100 px-2 py-1 rounded-md text-slate-500">Preparation</span>
         </div>
 
         <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-100 min-h-[200px] flex items-center justify-center">
-          {data.idealViewImageUrl ? (
-            <img
-              src={data.idealViewImageUrl}
-              alt="Ideal View"
-              className="w-full aspect-square object-cover"
-            />
-          ) : (
-            <div className="p-8 text-center space-y-4">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-relaxed">
-                Step Visual Unavailable<br /><span className="font-normal normal-case opacity-60">(Manual search grounded data check)</span>
-              </p>
-            </div>
-          )}
+          <img
+            src={data.idealViewImageUrl || data.userPhotoUrl}
+            alt="The Issue"
+            className="w-full aspect-square object-cover"
+          />
         </div>
       </div>
 
