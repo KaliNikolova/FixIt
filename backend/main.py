@@ -5,9 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
 from routers import repairs, gemini
+from config import get_settings
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+settings = get_settings()
 
 app = FastAPI(
     title="FixIt API",
@@ -18,11 +21,7 @@ app = FastAPI(
 # Configure CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://0.0.0.0:3000"
-    ],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

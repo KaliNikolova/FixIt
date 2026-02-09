@@ -33,6 +33,7 @@ The `.env` file must contain:
 - `GEMINI_API_KEY`: Free tier key for text analysis and standard operations.
 - `GEMINI_IMAGE_API_KEY`: Billed key for high-quality image generation (Imagen).
 - `GEMINI_SEARCH_API_KEY`: Key with Google Search Grounding enabled for finding manuals and technical specs.
+- `CORS_ORIGINS`: Comma-separated list of allowed frontend URLs (vital for production).
 
 > [!NOTE]
 > You can use the same key for all three if it has the necessary permissions and billing attached.
