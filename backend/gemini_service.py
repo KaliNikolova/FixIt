@@ -3,6 +3,8 @@
 import base64
 import json
 import re
+import urllib.request
+import urllib.error
 from google import genai
 from google.genai import types
 from config import get_settings
@@ -10,9 +12,16 @@ from schemas import ModerationResponse
 
 settings = get_settings()
 
+# Model configuration - centralized
+MODEL_TEXT = "gemini-3-flash-preview"           # Analysis, troubleshooting, moderation
+MODEL_TEXT_FALLBACK = "gemini-2.5-flash"      # Backup if primary unavailable
+MODEL_IMAGE = "gemini-2.5-flash-image"          # Image generation (uses imagen internally)
+MODEL_SEARCH = "gemini-3-flash-preview"         # Manual search with Google grounding
+
 # Initialize clients
 _text_client = None
 _image_client = None
+_search_client = None
 
 
 def get_text_client() -> genai.Client:
@@ -29,6 +38,14 @@ def get_image_client() -> genai.Client:
     if _image_client is None:
         _image_client = genai.Client(api_key=settings.gemini_image_api_key)
     return _image_client
+
+
+def get_search_client() -> genai.Client:
+    """Get the Gemini client for search operations with grounding."""
+    global _search_client
+    if _search_client is None:
+        _search_client = genai.Client(api_key=settings.gemini_search_api_key)
+    return _search_client
 
 
 async def analyze_image(photo_base64: str, user_text: str = "") -> dict:
@@ -59,7 +76,7 @@ async def analyze_image(photo_base64: str, user_text: str = "") -> dict:
     image_data = base64.b64decode(photo_base64)
     
     response = client.models.generate_content(
-        model="gemini-3-flash-preview",
+        model=MODEL_TEXT,
         contents=[
             types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
             prompt
@@ -95,32 +112,102 @@ async def analyze_image(photo_base64: str, user_text: str = "") -> dict:
     return json.loads(response.text)
 
 
-async def find_manual(object_name: str) -> str | None:
-    """Search for official manuals using Google Search grounding."""
+def _extract_urls_from_response(response) -> list[str]:
+    urls: list[str] = []
+
+    if response.candidates and response.candidates[0].grounding_metadata:
+        chunks = response.candidates[0].grounding_metadata.grounding_chunks
+        if chunks:
+            for chunk in chunks:
+                if chunk.web and chunk.web.uri:
+                    urls.append(chunk.web.uri)
+
+    text = response.text or ""
+    if text:
+        urls.extend(re.findall(r'https?://[^\s)]+', text))
+
+    seen = set()
+    unique_urls = []
+    for url in urls:
+        if url not in seen:
+            seen.add(url)
+            unique_urls.append(url)
+
+    return unique_urls
+
+
+def _pick_preferred_url(urls: list[str], prefer_pdf: bool) -> str | None:
+    if not urls:
+        return None
+    if prefer_pdf:
+        for url in urls:
+            if ".pdf" in url.lower():
+                return url
+    return urls[0]
+
+
+def _is_url_reachable(url: str, timeout_seconds: float = 3.0) -> bool:
     try:
-        client = get_text_client()
-        
-        response = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=f"Find the official support page or PDF repair manual for: {object_name}. Return the primary URL.",
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())]
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            return 200 <= response.status < 400
+    except urllib.error.HTTPError as exc:
+        if exc.code == 405:
+            try:
+                request = urllib.request.Request(url, method="GET")
+                with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+                    return 200 <= response.status < 400
+            except Exception:
+                return False
+        return False
+    except Exception:
+        return False
+
+
+async def find_manual(object_name: str) -> str | None:
+    """Find a single best resource link with PDF priority, then broader sources."""
+    try:
+        client = get_search_client()
+
+        search_prompts = [
+            (
+                f"Find an official PDF repair manual for: {object_name}. Return the best URL.",
+                True,
+            ),
+            (
+                f"Find the official support page for: {object_name}. Return the best URL.",
+                False,
+            ),
+            (
+                f"Find a reputable repair guide article for: {object_name}. Return the best URL.",
+                False,
+            ),
+            (
+                f"Find a helpful YouTube repair video for: {object_name}. Return the best URL.",
+                False,
+            ),
+            (
+                f"Find a helpful Reddit thread about repairing: {object_name}. Return the best URL.",
+                False,
+            ),
+        ]
+
+        for prompt, prefer_pdf in search_prompts:
+            response = client.models.generate_content(
+                model=MODEL_SEARCH,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())]
+                )
             )
-        )
-        
-        # Try to extract URL from grounding metadata
-        if response.candidates and response.candidates[0].grounding_metadata:
-            chunks = response.candidates[0].grounding_metadata.grounding_chunks
-            if chunks:
-                for chunk in chunks:
-                    if chunk.web and chunk.web.uri:
-                        return chunk.web.uri
-        
-        # Fallback: extract URL from text
-        text = response.text or ""
-        url_match = re.search(r'https?://[^\s]+', text)
-        return url_match.group(0) if url_match else None
-        
+
+            urls = _extract_urls_from_response(response)
+            reachable_urls = [url for url in urls if _is_url_reachable(url)]
+            preferred = _pick_preferred_url(reachable_urls, prefer_pdf)
+            if preferred:
+                return preferred
+
+        return None
     except Exception as e:
         print(f"Manual search failed: {e}")
         return None
@@ -134,7 +221,7 @@ async def generate_step_image(object_name: str, step_description: str, ideal_vie
         prompt = f"Professional technical repair manual photograph. Object: {object_name}. Scene: {ideal_view}. Action: {step_description}. High-quality studio lighting, sharp focus on repair area, neutral background, no text overlays, realistic photographic style."
         
         response = client.models.generate_content(
-            model="gemini-2.5-flash-image",
+            model=MODEL_IMAGE,
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_modalities=["image", "text"]
@@ -167,7 +254,7 @@ async def troubleshoot(photo_base64: str, object_name: str, step_index: int, cur
         image_data = base64.b64decode(photo_base64)
         
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model=MODEL_TEXT,
             contents=[
                 types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
                 prompt
@@ -191,7 +278,7 @@ async def moderate_image(photo_base64: str) -> ModerationResponse:
         image_data = base64.b64decode(photo_base64)
         
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model=MODEL_TEXT,
             contents=[
                 types.Part.from_bytes(data=image_data, mime_type="image/jpeg"),
                 prompt

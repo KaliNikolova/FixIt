@@ -42,16 +42,28 @@ const SetupScreen: React.FC = () => {
         <p className="text-slate-500 font-medium">Issue: {data.issueType}</p>
       </div>
 
-      {data.safetyWarning && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex gap-3 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <div className="space-y-1">
-            <p className="font-bold text-red-900 text-sm">Safety Warning</p>
-            <p className="text-red-700 text-sm leading-snug">{data.safetyWarning}</p>
+      {data.manualUrl && (
+        <a
+          href={data.manualUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-slate-800">Reference Guide from the Web</p>
+              <p className="text-xs text-slate-500">Open to see what the internet says</p>
+            </div>
           </div>
-        </div>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       )}
 
       <div className="space-y-4">
@@ -88,31 +100,19 @@ const SetupScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {data.manualUrl && (
-          <a
-            href={data.manualUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-slate-800">Official Manual</p>
-                <p className="text-xs text-slate-500">Grounded Search Link</p>
-              </div>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
-        )}
+      {data.safetyWarning && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl flex gap-3 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div className="space-y-1">
+            <p className="font-bold text-red-900 text-sm">Safety Warning</p>
+            <p className="text-red-700 text-sm leading-snug">{data.safetyWarning}</p>
+          </div>
+        </div>
+      )}
 
+      <div className="flex flex-col gap-3">
         <button
           onClick={() => navigate('/steps')}
           className="w-full text-white py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all"
