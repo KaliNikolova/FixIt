@@ -29,9 +29,13 @@ pip install -r requirements.txt
 
 ## Environment
 
-The `.env` file contains:
-- `GEMINI_API_KEY` - Free tier key for text operations
-- `GEMINI_IMAGE_API_KEY` - Billed key for image generation
+The `.env` file must contain:
+- `GEMINI_API_KEY`: Free tier key for text analysis and standard operations.
+- `GEMINI_IMAGE_API_KEY`: Billed key for high-quality image generation (Imagen).
+- `GEMINI_SEARCH_API_KEY`: Key with Google Search Grounding enabled for finding manuals and technical specs.
+
+> [!NOTE]
+> You can use the same key for all three if it has the necessary permissions and billing attached.
 
 ## Run
 
