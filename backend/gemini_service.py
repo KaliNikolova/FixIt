@@ -3,6 +3,8 @@
 import base64
 import json
 import re
+import urllib.request
+import urllib.error
 from google import genai
 from google.genai import types
 from config import get_settings
@@ -27,6 +29,7 @@ def get_text_client() -> genai.Client:
     global _text_client
     if _text_client is None:
         _text_client = genai.Client(api_key=settings.gemini_api_key)
+    print(settings.gemini_api_key[:4] + "********")
     return _text_client
 
 
@@ -141,6 +144,24 @@ def _extract_urls_from_response(response) -> list[str]:
     return unique_urls
 
 
+def _is_url_reachable(url: str, timeout_seconds: float = 3.0) -> bool:
+    try:
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            return 200 <= response.status < 400
+    except urllib.error.HTTPError as exc:
+        if exc.code == 405:
+            try:
+                request = urllib.request.Request(url, method="GET")
+                with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+                    return 200 <= response.status < 400
+            except Exception:
+                return False
+        return False
+    except Exception:
+        return False
+
+
 def _pick_preferred_url(urls: list[str], prefer_pdf: bool) -> str | None:
     if not urls:
         return None
@@ -189,7 +210,9 @@ async def find_manual(object_name: str) -> str | None:
             )
 
             urls = _extract_urls_from_response(response)
-            preferred = _pick_preferred_url(urls, prefer_pdf)
+            reachable_urls = [url for url in urls if _is_url_reachable(url)]
+            preferred = _pick_preferred_url(reachable_urls, prefer_pdf)
+
             if preferred:
                 return preferred
 
